@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
-
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAp07yR6ailPZVjeI7I1QJTnMMeE2tOvFs",
@@ -12,20 +12,20 @@ const firebaseConfig = {
     measurementId: "G-LGFDJ1GHQD"
 };
 
-
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
 
+// Redirects based on login status
 onAuthStateChanged(auth, user => {
     if (!user && window.location.pathname !== '/login') {
-        // Not logged in → send to login
         window.location.href = "/login";
     } else if (user && window.location.pathname === '/login') {
-        // Already logged in → send to dashboard
         window.location.href = "/dashboard";
     }
 });
 
+// Sign out
 const signOut = () => {
     auth.signOut().then(() => {
         window.location.href = "/login";
@@ -33,5 +33,28 @@ const signOut = () => {
         console.error("Sign out error:", error);
     });
 }
-
 window.signOut = signOut;
+
+// Check if user is admin
+onAuthStateChanged(auth, async user => {
+    if (user) {
+        const userRef = doc(db, "users", user.email);
+        try {
+            const userSnap = await getDoc(userRef);
+            if (userSnap.exists()) {
+                window.isAdmin = !!userSnap.data().admin;
+            } else {
+                window.isAdmin = false;
+            }
+            document.querySelectorAll('.adminOnly').forEach(el => {
+                el.style.display = window.isAdmin ? 'block' : 'none';
+            });
+            document.querySelectorAll('.adminExclude').forEach(el => {
+                el.style.display = !window.isAdmin ? 'block' : 'none';
+            });
+        } catch (error) {
+            console.error("Error checking admin status:", error);
+            window.isAdmin = false;
+        }
+    }
+});
