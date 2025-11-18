@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sparkly — Coming Soon</title>
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: system-ui, sans-serif;
+    }
+
+    body {
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Background image */
+    .bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url("https://picsum.photos/1920/1080") center/cover no-repeat;
+        filter: blur(50px) brightness(0.7);
+        z-index: -2;
+    }
+
+    /* Dark overlay to make text pop */
+    .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.3);
+        z-index: -1;
+    }
+
+    h1 {
+        font-size: 4rem;
+        margin-bottom: 0.3em;
+    }
+
+    p {
+        font-size: 1.5rem;
+        opacity: 0.85;
+    }
+</style>
+
+</head>
+<body>
+    <div class="bg"></div>
+    <div class="overlay"></div>
+
+    <div>
+        <h1>Sparkly</h1>
+        <div style="margin-bottom: 1.5em; font-size: 1.2rem; opacity: 0.9;">
+            <input type="email" name="usr" placeholder="E-mail" style="padding: 0.5em; font-size: 1rem; border: none; border-radius: 5px; margin-right: 0.5em;" class="mail" />
+            <input type="password" name="pass" placeholder="Password" style="padding: 0.5em; font-size: 1rem; border: none; border-radius: 5px; margin-right: 0.5em;" class="password" />
+            <button style="padding: 0.5em 1em; font-size: 1rem; border: none; border-radius: 5px; background-color: #ff5722; color: white; cursor: pointer;" onclick=signIn() > Sign In</button>
+        </div>
+    </div>
+</body>
+<script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js';
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAp07yR6ailPZVjeI7I1QJTnMMeE2tOvFs",
+        authDomain: "sparkly-gmz.firebaseapp.com",
+        projectId: "sparkly-gmz",
+        storageBucket: "sparkly-gmz.firebasestorage.app",
+        messagingSenderId: "83661112176",
+        appId: "1:83661112176:web:f5af334022156d9a5585b5",
+        measurementId: "G-LGFDJ1GHQD"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    onAuthStateChanged(auth, user => {
+        if (!user) {
+            console.log("Not logged in");
+        } else if (user && window.location.pathname === '/login') {
+            // Already logged in → send to dashboard
+            window.location.href = "/dashboard";
+        }
+    });
+
+    function signIn() {
+        const email = document.querySelector('.mail').value;
+        const password = document.querySelector('.password').value;
+
+        signInWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                window.location.href = '/dashboard';
+            })
+            .catch((error) => {
+                const errorCode = error.code;
+                const errorMessage = error.message;
+                alert('Error: ' + errorMessage);
+            });
+    }
+    window.signIn = signIn;
+</script>
+</html>
